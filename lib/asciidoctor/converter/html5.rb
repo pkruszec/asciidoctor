@@ -92,6 +92,10 @@ class Converter::Html5Converter < Converter::Base
   end
 
   def convert_document node
+
+    add_track_code = node.attr? 'track-render'
+    track_lib = "https://kruchy.net/lib"
+    
     br = %(<br#{slash = @void_element_slash}>)
     unless (asset_uri_scheme = node.attr 'asset-uri-scheme', 'https').empty?
       asset_uri_scheme = %(#{asset_uri_scheme}:)
@@ -112,6 +116,11 @@ class Converter::Html5Converter < Converter::Base
     result << %(<meta name="keywords" content="#{node.attr 'keywords'}"#{slash}>) if node.attr? 'keywords'
     result << %(<meta name="author" content="#{((authors = node.sub_replacements node.attr 'authors').include? '<') ? (authors.gsub XmlSanitizeRx, '') : authors}"#{slash}>) if node.attr? 'authors'
     result << %(<meta name="copyright" content="#{node.attr 'copyright'}"#{slash}>) if node.attr? 'copyright'
+
+    if add_track_code
+      result << %(<link rel="stylesheet" href="#{track_lib}/ol.css"/>)
+    end
+    
     if node.attr? 'favicon'
       if (icon_href = node.attr 'favicon').empty?
         icon_href = 'favicon.ico'
@@ -251,6 +260,13 @@ class Converter::Html5Converter < Converter::Base
     # JavaScript (and auxiliary stylesheets) loaded at the end of body for performance reasons
     # See http://www.html5rocks.com/en/tutorials/speed/script-loading/
 
+    if add_track_code
+      result << %(<script src="#{track_lib}/tcx.js"></script>
+<script src="#{track_lib}/ol.js"></script>
+<script src="#{track_lib}/gpx_parser.js"></script>
+<script src="#{track_lib}/gpx-embed.js"></script>)
+    end
+    
     if syntax_hl
       if syntax_hl.docinfo? :head
         result[syntax_hl_docinfo_head_idx] = syntax_hl.docinfo :head, node, cdn_base_url: cdn_base_url, linkcss: linkcss, self_closing_tag_slash: slash
@@ -1175,6 +1191,12 @@ Your browser does not support the video tag.
     %(<b class="button">#{node.text}</b>)
   end
 
+  def convert_inline_track node
+    height = node.attributes['height']
+    style = %(width: 100%; height: #{height}; margin: 0 auto;)
+    %(<div class="gpx-embed" data-link="#{node.target}" style="#{style}"></div>)
+  end
+  
   def convert_inline_callout node
     if node.document.attr? 'icons', 'font'
       %(<i class="conum" data-value="#{node.text}"></i><b>(#{node.text})</b>)

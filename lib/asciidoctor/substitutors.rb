@@ -410,6 +410,27 @@ module Substitutors
       end
     end
 
+    if found_macroish && (text.include? 'track:')
+      if doc_attrs.key? 'track-render'
+        text = text.gsub InlineTrackMacroRx do
+          # honor the escape
+          if $&.start_with? RS
+            next $&.slice 1, $&.length
+          else
+            target = $1
+          end
+          
+          type = 'track'
+          attrs = parse_attributes $2, [], unescape_input: true
+          if attrs['height'] == nil
+            attrs['height'] = '600px'
+          end
+          
+          Inline.new(self, :track, nil, type: type, target: target, attributes: attrs).convert
+        end
+      end
+    end
+    
     if found_macroish && ((text.include? 'image:') || (text.include? 'icon:'))
       # image:filename.png[Alt Text]
       text = text.gsub InlineImageMacroRx do

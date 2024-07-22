@@ -537,6 +537,11 @@ module Asciidoctor
   # NOTE be as non-greedy as possible by not allowing space or left square bracket in target
   InlineLinkMacroRx = /\\?(?:link|(mailto)):(|[^:\s\[][^\s\[]*)\[(|#{CC_ALL}*?[^\\])\]/m
 
+  # Match a link to a GPX/TCX track.
+  #
+  # TODO Examples
+  InlineTrackMacroRx = /\\?(?:track):(|[^:\s\[][^\s\[]*)\[(|#{CC_ALL}*?[^\\])\]/m
+  
   # Matches the name of a macro.
   #
   MacroNameRx = /^#{CG_WORD}[#{CC_WORD}-]*$/
